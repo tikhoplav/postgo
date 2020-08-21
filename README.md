@@ -10,7 +10,16 @@ Main goal of **POSTGO** library is to make regular golang developer be able to u
 ### JOIN
 
 ```
-fmt.Println(query.ToSQL())
+query := postgo.From("users").
+	Join("orders").
+	On("users.id", "orders.user_id").
+	ToSQL()
+
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(query)
 
 // Output
 SELECT * FROM "users" INNER JOIN "orders" ON ("users"."id" = "orders"."user_id");
@@ -19,7 +28,16 @@ SELECT * FROM "users" INNER JOIN "orders" ON ("users"."id" = "orders"."user_id")
 ### JOIN USING
 
 ```
-fmt.Println(query.ToSQL())
+query, err := postgo.From("users").
+	Join("orders").
+	Using("card_number").
+	ToSQL()
+
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(query)
 
 // Output
 SELECT * FROM "users" INNER JOIN "orders" USING ("card_number");
@@ -28,7 +46,22 @@ SELECT * FROM "users" INNER JOIN "orders" USING ("card_number");
 ### UNION
 
 ```
-fmt.Println(query.ToSQL())
+distributors := postgo.Select("name").
+	From("distributors").
+	WhereLike("name", "W%")
+
+actors := postgo.Select("name").
+	From("actors").
+	WhereLike("name", "W%")
+
+query, err := postgo.Union(distributors, actors).
+	ToSQL()
+
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(query)
 
 // Output
 SELECT "distributors"."name"
@@ -43,7 +76,24 @@ SELECT "actors"."name"
 ### EXCEPT
 
 ```
-fmt.Println(query.ToSQL())
+topFilms := postgo.From("top_films").
+	Select("title").
+	Select("release_year").	
+	WhereMore("yearly_income", 1000000)
+
+filmsByGenre := postgo.From("films_by_genre").
+	Select("title").
+	Select("release_year").
+	Where("genre", "action")
+
+query, err := postgo.Except(topFilms, filmsByGenre).
+	ToSQL()
+
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(query)
 
 // Output
 SELECT "title", "release_year"
@@ -58,20 +108,60 @@ SELECT "title", "release_year"
 ### INTERSECT
 
 ```
-fmt.Println(query.ToSQL())
+query, err := postgo.Intersect(postgo.From("most_popular_films"), postgo.From("top_rated_films")).
+	ToSQL()
+
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(query)
 
 // Output
-SELECT "title", "release_year"
+SELECT *
 	FROM "most_popular_films" 
 INTERSECT
-SELECT "title", "release_year"
+SELECT *
 	FROM "top_rated_films";
 ```
 
 ### WITH closures
 
 ```
-fmt.Println(query.ToSQL())
+regionalSales := postgo.
+	Select("region").
+	Select("SUM(amount)", "total_sales").
+	From("orders").
+	GroupBy("region")
+
+topTen := postgo.
+	From("regional_sales").
+	Select("SUM(total_sales)/10")
+
+topRegions := postgo.
+	From("regional_sales").
+	Select("region").
+	WhereMore("total_sales", topTen)
+
+query, err := postgo.
+	With(regionalSales, "regional_sales").
+	With(topRegions, "top_regions").
+	Select("region").
+	Select("product").
+	Select("SUM(quantity)", "product_units").
+	Select("SUM(amount)", "product_sales").
+	From("orders").
+	WhereIn("region", postgo.Select("region").From("top_regions")).
+	GroupBy("region").
+	GroupBy("product").
+	ToSQL()
+
+
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(query)
 
 // Output
 WITH "regional_sales" AS (
@@ -81,7 +171,7 @@ WITH "regional_sales" AS (
      ), "top_regions" AS (
         SELECT "region"
         FROM "regional_sales"
-        WHERE "total_sales" > (SELECT SUM("total_sales")/10 FROM "regional_sales")
+        WHERE "total_sales" > (SELECT SUM("total_sales")/'10' FROM "regional_sales")
      )
 SELECT "region", 
 		"product",
