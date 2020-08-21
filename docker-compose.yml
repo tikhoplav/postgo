@@ -4,15 +4,6 @@ services:
   app:
     build: .
     image: tikhoplav/go
+    working_dir: /src
     volumes:
-      - ./app:/app
-      - ./pkg:/go/pkg
-    ports:
-      - 8080:8080
-    environment:
-      DB_URL: host=db port=5432 dbname=postgres user=postgres password=example
-
-  db:
-    image: postgres:alpine
-    environment:
-      POSTGRES_PASSWORD: example
+      - .:/src
