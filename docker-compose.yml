@@ -7,3 +7,4 @@ services:
     working_dir: /src
     volumes:
       - .:/src
+    command: go test
