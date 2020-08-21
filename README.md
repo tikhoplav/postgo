@@ -173,8 +173,7 @@ WITH "regional_sales" AS (
         FROM "regional_sales"
         WHERE "total_sales" > (SELECT SUM("total_sales")/'10' FROM "regional_sales")
      )
-SELECT "region",
-	   "product",
+SELECT "region", "product",
        SUM("quantity") AS "product_units",
        SUM("amount") AS "product_sales"
 	FROM "orders"
