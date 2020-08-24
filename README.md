@@ -7,40 +7,71 @@ This is a home project in a early development stage. If you are looking for fini
 Main goal of **POSTGO** library is to make regular golang developer be able to utilize the most powerfull postgresql tools with the lowest possible syntax complexity.
 
 ## Ver 0.1. Goals
+
+### SELECT queries
+
+```
+sql, _ := postgo.Select().From("users").ToSQL()
+fmt.Println(sql)
+
+// SELECT * FROM "users";
+```
+
+#### Columns with aliases
+
+```
+sql, _ := postgo.Select().
+	Col("name").
+	Col("email").
+	From("users").
+	ToSQL()
+
+fmt.Println(sql)
+
+// SELECT "users"."name", "users"."email" FROM "users";
+```
+
+Also columns can be retrieved with alias.
+
+```
+sql, _ := postgo.Select().
+	Col("name", "user_name").
+	Col("email", "login").
+	From("users").
+	ToSQL()
+
+fmt.Println(sql)
+
+// SELECT "users"."name" AS "user_name", "users"."email" AS "login" FROM "users";
+``` 
+
+
 ### JOIN
 
 ```
-query := postgo.From("users").
+sql, _ := postgo.Select().
+	From("users").
 	Join("orders").
 	On("users.id", "orders.user_id").
 	ToSQL()
 
-if err != nil {
-	panic(err)
-}
+fmt.Println(sql)
 
-fmt.Println(query)
-
-// Output
-SELECT * FROM "users" INNER JOIN "orders" ON ("users"."id" = "orders"."user_id");
+// SELECT * FROM "users" INNER JOIN "orders" ON ("users"."id" = "orders"."user_id");
 ```
 
 ### JOIN USING
 
 ```
-query, err := postgo.From("users").
+sql, _ := postgo.Select()
+	From("users").
 	Join("orders").
 	Using("card_number").
 	ToSQL()
 
-if err != nil {
-	panic(err)
-}
+fmt.Println(sql)
 
-fmt.Println(query)
-
-// Output
-SELECT * FROM "users" INNER JOIN "orders" USING ("card_number");
+// SELECT * FROM "users" INNER JOIN "orders" USING ("card_number");
 ```
 
 ### UNION
@@ -86,43 +117,28 @@ filmsByGenre := postgo.From("films_by_genre").
 	Select("release_year").
 	Where("genre", "action")
 
-query, err := postgo.Except(topFilms, filmsByGenre).
+sql, _ := postgo.Except(topFilms, filmsByGenre).
 	ToSQL()
 
-if err != nil {
-	panic(err)
-}
+fmt.Println(sql)
 
-fmt.Println(query)
-
-// Output
-SELECT "title", "release_year"
-	FROM "top_films"
-	WHERE "yearly_income" > '1000000' 
-EXCEPT
-SELECT "title", "release_year"
-	FROM "films_by_genre"
-	WHERE "genre" = 'action'
+// SELECT "title", "release_year" 
+// FROM "top_films" 
+// WHERE "yearly_income" > '1000000' 
+// EXCEPT SELECT "title", "release_year" 
+// FROM "films_by_genre"
+// WHERE "genre" = 'action';
 ```
 
 ### INTERSECT
 
 ```
-query, err := postgo.Intersect(postgo.From("most_popular_films"), postgo.From("top_rated_films")).
+sql, _ := postgo.Intersect(postgo.From("most_popular_films"), postgo.From("top_rated_films")).
 	ToSQL()
 
-if err != nil {
-	panic(err)
-}
+fmt.Println(sql)
 
-fmt.Println(query)
-
-// Output
-SELECT *
-	FROM "most_popular_films" 
-INTERSECT
-SELECT *
-	FROM "top_rated_films";
+// SELECT * FROM "most_popular_films" INTERSECT SELECT * FROM "top_rated_films";
 ```
 
 ### WITH closures
@@ -143,7 +159,7 @@ topRegions := postgo.
 	Select("region").
 	WhereMore("total_sales", topTen)
 
-query, err := postgo.
+query, _ := postgo.
 	With(regionalSales, "regional_sales").
 	With(topRegions, "top_regions").
 	Select("region").
@@ -156,27 +172,40 @@ query, err := postgo.
 	GroupBy("product").
 	ToSQL()
 
-
-if err != nil {
-	panic(err)
-}
-
 fmt.Println(query)
 
-// Output
-WITH "regional_sales" AS (
-        SELECT "region", SUM("amount") AS "total_sales"
-        FROM "orders"
-        GROUP BY "region"
-     ), "top_regions" AS (
-        SELECT "region"
-        FROM "regional_sales"
-        WHERE "total_sales" > (SELECT SUM("total_sales")/'10' FROM "regional_sales")
-     )
-SELECT "region", "product",
-    SUM("quantity") AS "product_units",
-    SUM("amount") AS "product_sales"
-FROM "orders"
-WHERE "region" IN (SELECT "region" FROM "top_regions")
-GROUP BY "region", "product";
+// WITH "regional_sales" AS (
+//         SELECT "region", SUM("amount") AS "total_sales"
+//         FROM "orders"
+//         GROUP BY "region"
+//      ), "top_regions" AS (
+//         SELECT "region"
+//         FROM "regional_sales"
+//         WHERE "total_sales" > (SELECT SUM("total_sales")/'10' FROM "regional_sales")
+//      )
+// SELECT "region", "product",
+//    SUM("quantity") AS "product_units",
+//    SUM("amount") AS "product_sales"
+// FROM "orders"
+// WHERE "region" IN (SELECT "region" FROM "top_regions")
+// GROUP BY "region", "product";
+```
+
+### PREPARE
+
+```
+query := postgo.Select().
+
+preapre, _ := query.Prepare()
+
+fmt.Println(prepare)
+
+// PREPARE usrrptplan (int) AS
+//    SELECT * FROM users u, logs l WHERE u.usrid=$1 AND u.usrid=l.usrid
+//    AND l.date = $2;
+
+execute, _ := query.Execute()
+fmt.Println(execute)
+
+// EXECUTE usrrptplan(1, current_date);
 ```
