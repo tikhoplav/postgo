@@ -4,20 +4,20 @@ import "testing"
 
 func checkQuery(t *testing.T, want string, query *Query) {
 	if got := query.ToString(); got != want {
-        t.Errorf("\nWant: %q\n Got: %q", want, got)
-    }
+		t.Errorf("\nWant: %q\n Got: %q", want, got)
+	}
 }
 
 func TestFrom(t *testing.T) {
-    want := "SELECT * FROM users;"
-    query := From("users")
-    checkQuery(t, want, query)
+	want := "SELECT * FROM users;"
+	query := From("users")
+	checkQuery(t, want, query)
 }
 
 func TestAlias(t *testing.T) {
 	want := "SELECT * FROM users AS u;"
-    query := From("users").As("u")
-    checkQuery(t, want, query)
+	query := From("users").As("u")
+	checkQuery(t, want, query)
 }
 
 func TestFromSubquery(t *testing.T) {
@@ -43,7 +43,7 @@ func TestColumn(t *testing.T) {
 	checkQuery(t, want, query)
 
 	query = From("users").Select("id")
-    checkQuery(t, want, query)
+	checkQuery(t, want, query)
 }
 
 func TestColumns(t *testing.T) {

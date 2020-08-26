@@ -7,8 +7,8 @@ import (
 
 type Query struct {
 	source string
-	alias string
-	cols []string
+	alias  string
+	cols   []string
 }
 
 func (q *Query) ToString() string {
@@ -18,7 +18,7 @@ func (q *Query) ToString() string {
 func (q *Query) Statement() string {
 	source := q.sourceDef()
 	cols := q.colsDef()
-	return fmt.Sprintf("SELECT %s FROM %s", cols, source) 
+	return fmt.Sprintf("SELECT %s FROM %s", cols, source)
 }
 
 func (q *Query) sourceDef() string {
