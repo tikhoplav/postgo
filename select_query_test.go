@@ -2,7 +2,7 @@ package postgo
 
 import "testing"
 
-func checkQuery(t *testing.T, want string, query *Query) {
+func checkQuery(t *testing.T, want string, query *SelectQuery) {
 	if got := query.ToSQL(); got != want {
 		t.Errorf("\nWant: %q\n Got: %q", want, got)
 	}
