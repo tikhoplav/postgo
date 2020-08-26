@@ -1,16 +1,19 @@
 package postgo
 
-type Query interface{
-	ToString() (string, error)
-	GetStatement() (string, error)
-	GetParameters() []interface{}
+import (
+	"fmt"
+)
+
+func From(table string, columns ...string) *Query {
+	return &Query{
+		source: table,
+		cols: columns,
+	}
 }
 
-func Select(args ...string) *SelectQuery {
-	if len(args) == 0 {
-		return &SelectQuery{}
-	}
-	return &SelectQuery{
-		cols: args,
+func FromSub(sub *Query, columns ...string) *Query {
+	return &Query{
+		source: fmt.Sprintf("(%s)", sub.Statement()),
+		cols: columns,
 	}
 }
