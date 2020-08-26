@@ -3,7 +3,7 @@ package postgo
 import "testing"
 
 func checkQuery(t *testing.T, want string, query *Query) {
-	if got := query.ToString(); got != want {
+	if got := query.ToSQL(); got != want {
 		t.Errorf("\nWant: %q\n Got: %q", want, got)
 	}
 }

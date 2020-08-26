@@ -11,7 +11,7 @@ type Query struct {
 	cols   []string
 }
 
-func (q *Query) ToString() string {
+func (q *Query) ToSQL() string {
 	return fmt.Sprintf("%s;", q.Statement())
 }
 

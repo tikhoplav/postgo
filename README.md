@@ -10,40 +10,84 @@ Main goal of **POSTGO** library is to make regular golang developer be able to u
 
 ### SELECT queries
 
+Every query building process starts with function `From($source)`. The source can be a **table name** as well as name of temorary table created with `with` statment, as well as other **raw SQL statement** [postgresql documentation - select](https://www.postgresql.org/docs/9.5/sql-select.html).
+
+The most simple example of select query is the following:
+
 ```
-sql, _ := postgo.Select().From("users").ToSQL()
+sql := postgo.From("users").ToSQL()
 fmt.Println(sql)
 
-// SELECT * FROM "users";
+// SELECT * FROM users;
 ```
 
-#### Columns with aliases
+<br>
+
+Set of columns can be specified multiple ways. For example:
 
 ```
-sql, _ := postgo.Select().
-	Col("name").
-	Col("email").
-	From("users").
+sql := postgo.From("users", "id", "name").ToSQL()
+fmt.Println(sql)
+
+// SELECT id, name FROM users;
+```
+
+Another way is to use builder `Select` function: 
+
+```
+sql := postgo.From("users").
+	Select("name").
+	Select("email").	
 	ToSQL()
-
 fmt.Println(sql)
 
-// SELECT "users"."name", "users"."email" FROM "users";
+// SELECT name, email FROM users;
 ```
 
-Also columns can be retrieved with alias.
+You can set any valid SQL expression as selectable item:
 
 ```
-sql, _ := postgo.Select().
-	Col("name", "user_name").
-	Col("email", "login").
-	From("users").
+sql := postgo.From("users").Select("COUNT(*) AS total_users").ToSQL()
+fmt.Println(sql)
+
+// SELECT COUNT(*) AS total_users FROM users;
+
+sql = postgo.From("users").SelectAs("COUNT(*)", "total_users").ToSQL()
+fmt.Println(sql)
+
+// Same result
+// SELECT COUNT(*) AS total_users FROM users;
+```
+
+Alias can be specified for each colum as well as in the example below:
+
+```
+sql := postgo.From("users").
+	SelectAs("name", "user_name").
+	SelectAs("email", "login").
 	ToSQL()
-
 fmt.Println(sql)
 
-// SELECT "users"."name" AS "user_name", "users"."email" AS "login" FROM "users";
-``` 
+// SELECT name AS user_name, email AS login FROM users;
+```
+
+<br><br>
+
+#### Selection from subquery
+
+In addition to selection from table by it's name, selection can be done from another select query:
+
+```
+sub := postgo.From("users")
+query := postgo.FromSub(sub, "COUNT(*)").ToSQL()
+fmt.Println(sql)
+
+// SELECT COUNT(*) FROM (SELECT * FROM users);
+```
+
+Obviously much more complex queries can be used as the source of the selection.
+
+If you want to make multiple selection from one particular subquery, you may want to use `with` statement instead. According [documentation](https://www.postgresql.org/docs/9.1/queries-with.html) this approach may show significant effectivness due to the fact that subqueries are only processed ones and used as temporary tables after.
 
 
 ### JOIN
