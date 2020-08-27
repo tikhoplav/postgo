@@ -66,3 +66,9 @@ func TestAddColumnWithAlias(t *testing.T) {
 		SelectAs("email", "login")
 	checkQuery(t, want, query)
 }
+
+func TestWhere(t *testing.T) {
+	want := "SELECT name FROM users WHERE id = 1;"
+	query := From("users", "name").Where("id", 1);
+	checkQuery(t, want, query)
+}
