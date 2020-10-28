@@ -10,18 +10,6 @@ Main goal of **POSTGO** library is to make regular golang developer be able to u
 
 ## Version 0.1 goals
 
-- [x] Basic selection
-- [x] Table alias
-- [x] Subquery as selection source
-- [ ] Where and parameters set
-- [ ] Where Groups (AND, OR)
-- [ ] Parameter transfer (from subquery to query)
-- [ ] GroupBy and Having
-- [ ] OrderBy with parameters
-- [ ] Limit, Offset and Fetch
-- [ ] Joins (Inner, Left, Right and Cross)
-- [ ] Union, Except and Intersect
-- [ ] With
-- [ ] Window
-- [ ] Locking
-- [ ] Table, columns and alias escape (?)
+- [ ] Query Builder
+- [ ] Schema Builder
+- [ ] Migration & Migrations Manager

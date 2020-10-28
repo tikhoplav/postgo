@@ -6,5 +6,15 @@ services:
     image: tikhoplav/go
     working_dir: /src
     volumes:
-      - .:/src
+      - ./src:/src
+      - ./pkg:/go/pkg
+    environment:
+      - DB_URL=postgres://postgo:postgo@db:5432/postgo
     command: go test
+
+  db:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_PASSWORD=postgo
+      - POSTGRES_USER=postgo
+      - POSTGRES_DB=postgo
